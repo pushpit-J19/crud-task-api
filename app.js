@@ -33,7 +33,6 @@ app.use(
 app.use(express.json());    // to not use 3rd party body parser
 
 
-
 // ==================================================================================================================
 
 // creating restful API endpoints which will come from browser
@@ -105,7 +104,7 @@ app.put('/tasklists/:tasklistId', (req, res)=>{
         })
 });
 app.patch('/tasklists/:tasklistId', (req, res)=>{
-    TaskList.findOneAndUpdate({"_id": req.params.tasklistId},{ $set : req.body})
+    TaskList.findOneAndUpdate({"_id": req.params.tasklistId},{ $set : req.body}, {'new': true})
         .then((taskList)=>{
             res.status(200).send(taskList);
         })
@@ -126,6 +125,81 @@ app.delete('/tasklists/:tasklistId', (req, res)=>{
             console.log("Error getting list", error);
             res.status(500);
         })
+});
+
+//-------------------------------------------------------------------------------------------------------------------
+
+// Routing for Task model
+
+// a task will always belong to a tasklist
+
+// Route for all tasks belonging to a particular task list
+// http://localhost:3000/taskslists/:tasklistId/tasks
+app.get("/tasklists/:tasklistId/tasks", (req, res)=>{
+    Task.find({ "_taskListId" : req.params.tasklistId })
+        .then((tasks)=>{
+            res.status(200).send(tasks);
+        })
+        .catch((error) => {
+            console.log("Error in getting tasks : ", error);
+            res.status(500);
+        });
+});
+
+// Route to get a particular task
+// http://localhost:3000/taskslists/:tasklistId/tasks/:taskId
+app.get("/tasklists/:tasklistId/tasks/:taskId", (req, res)=>{
+    Task.findOne({ "_taskListId" : req.params.tasklistId, "_id" : req.params.taskId })
+        .then((tasks)=>{
+            res.status(200).send(tasks);
+        })
+        .catch((error) => {
+            console.log("Error in getting tasks : ", error);
+            res.status(500);
+        });
+});
+
+// Route for create a task inside a particular task list
+app.post("/tasklists/:tasklistId/tasks", (req,res)=>{
+    console.log(req.body);
+    let taskObj = {'title' : req.body.title, '_taskListId' : req.params.tasklistId}
+    Task(taskObj).save()
+        .then((task) => {
+            res.status(201).send(task);
+        })
+        .catch((error) => {
+            console.log("Error creating task", error);
+            res.status(500);
+        });
+});
+
+
+// Route for updating a task
+app.patch("/tasklists/:tasklistId/tasks/:taskId", (req, res)=>{
+    Task.findOneAndUpdate(
+        { "_taskListId" : req.params.tasklistId, "_id" : req.params.taskId }, 
+        {$set : req.body}, 
+        {'new': true}
+    ).then((task)=>{
+        res.status(200).send(task);
+    })
+    .catch((error)=>{
+        console.log("Error updating task", error);
+        res.status(500);
+    })
+});
+
+
+// Route to delete a task 
+app.delete("/tasklists/:tasklistId/tasks/:taskId", (req,res)=>{
+    Task.findOneAndDelete({ "_taskListId" : req.params.tasklistId, "_id" : req.params.taskId })
+    .then((task)=>{
+        res.status(200).send(task);
+    })
+    .catch((error)=>{
+        console.log("Error deleting task", error);
+        res.status(500);
+    })
 });
 
 
