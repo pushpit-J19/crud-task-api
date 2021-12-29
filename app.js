@@ -117,14 +117,27 @@ app.patch('/tasklists/:tasklistId', (req, res)=>{
 
 // Route to delete a task list based on id
 app.delete('/tasklists/:tasklistId', (req, res)=>{
-    TaskList.findByIdAndDelete(req.params.tasklistId)
+
+    // Delete all tasks if a task list is deleted
+    const deleteAllContainingTask = (tasklist) => {
+        Task.deleteMany({_taskListId : req.params.tasklistId})
+            .then(() => {return tasklist;})
+            .catch((error) => {console.log(error);});
+            
+    }
+
+    // delete the task list itself
+    const responseTaskList = TaskList.findByIdAndDelete(req.params.tasklistId)
         .then((taskList)=>{
-            res.status(200).send(taskList);
+            deleteAllContainingTask(taskList);
         })
         .catch((error)=>{
             console.log("Error getting list", error);
             res.status(500);
-        })
+        });
+
+    res.status(200).send(responseTaskList);
+    
 });
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -201,6 +214,8 @@ app.delete("/tasklists/:tasklistId/tasks/:taskId", (req,res)=>{
         res.status(500);
     })
 });
+
+
 
 
 // ==================================================================================================================
