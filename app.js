@@ -23,7 +23,8 @@ app.use(
     (request, response, next) => {
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200"); // can use '*' instead of single origin
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-        response.setHeader("Access-Control-Allow-Headers", 'Origin', "X-Requested-With,content-type");
+  //response.setHeader("Access-Control-Allow-Headers", 'Origin', "X-Requested-With,content-type");
+        response.setHeader("Access-Control-Allow-Headers", "content-type");
         next();
     }
 );
